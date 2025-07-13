@@ -4,10 +4,10 @@ from fastapi import FastAPI, HTTPException, Response,status, Depends
 from fastapi.params import Body
 from pydantic import BaseModel
 import psycopg2
-from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 from . import models
-from .database import  engine, get_db
+from .database import  engine, get_db, connection, cursor
+
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -20,27 +20,11 @@ class Post(BaseModel):
     published: bool = True
 
 
-while True:
-    try:
-        connection = psycopg2.connect(host='localhost',database='fastapi', user='postgres', password='dell@123' )
-        cursor = connection.cursor(cursor_factory=RealDictCursor)
-        print("Connected to database successfully!")
-        break
-    except Exception as error:
-        print("connection to Database failed")
-        print("error: ",error)
-        time.sleep(3)
 
 
 @app.get("/")
 def root():
     return {"message": "This is Sai Teja's API"}
-
-@app.get("/sqlalchemy")
-def test_posts(db:Session = Depends(get_db)):
-
-    all_posts = db.query(models.Post).all()
-    return all_posts
 
 
 @app.get("/posts")
@@ -50,6 +34,8 @@ def get_posts(db:Session = Depends(get_db)):
     # return{"data":posts}
 
     posts = db.query(models.Post).all()
+    if not posts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Oops!! There are no posts")
     return posts
 
 
@@ -85,18 +71,24 @@ def create_a_new_post(post:Post,db:Session = Depends(get_db)):
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_a_post_by_id(id:int):
+def delete_a_post_by_id(id:int, db:Session = Depends(get_db)):
   
     try:
-        cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
-        deleted_post = cursor.fetchone()
-        connection.commit()
+        # cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
+        # deleted_post = cursor.fetchone()
+        # connection.commit()
 
-        if deleted_post is None:
+        post_query = db.query(models.Post).filter(models.Post.id == id)
+        post = post_query.first()
+
+        if post is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Post with id {id} not found"
             )
+        
+        post_query.delete(synchronize_session=False)
+        db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     
     
@@ -110,18 +102,25 @@ def delete_a_post_by_id(id:int):
     
 
 @app.put("/posts/{id}") # 200 status code
-def update_post(id:int, post:Post):
+def update_post(id:int, update_post:Post, db:Session = Depends(get_db)):
     try:
-        cursor.execute("""UPDATE posts 
-                    set title = %s, content = %s, published =%s WHERE id = %s RETURNING *""",(post.title, post.content, post.published, (str(id)),))
-        updated_post = cursor.fetchone()
-        connection.commit()
-        if updated_post is None:
+        # cursor.execute("""UPDATE posts 
+        #             set title = %s, content = %s, published =%s WHERE id = %s RETURNING *""",(post.title, post.content, post.published, (str(id)),))
+        # updated_post = cursor.fetchone()
+        # connection.commit()
+
+        post_query = db.query(models.Post).filter(models.Post.id == id)
+        post = post_query.first()
+
+        if post is None:
             return HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Post with id {id} not found"
                 )
-        return {"data": updated_post}
+        
+        post_query.update(update_post.model_dump(), synchronize_session=False)
+        db.commit()
+        return {"data": post}
     
 
     except psycopg2.Error as database_error:
