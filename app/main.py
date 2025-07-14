@@ -1,12 +1,9 @@
-import time
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Response,status, Depends
-from fastapi.params import Body
-from pydantic import BaseModel
 import psycopg2
 from sqlalchemy.orm import Session
-from . import models
-from .database import  engine, get_db, connection, cursor
+from . import models, schemas, utils
+from .database import connection, engine, get_db, connection
 
 
 
@@ -14,36 +11,23 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
-
 
 @app.get("/")
 def root():
     return {"message": "This is Sai Teja's API"}
 
 
-@app.get("/posts")
+@app.get("/posts", response_model=List[schemas.PostResponse])
 def get_posts(db:Session = Depends(get_db)):
-    # cursor.execute("""SELECT * FROM posts ORDER BY id """)
-    # posts = cursor.fetchall() 
-    # return{"data":posts}
-
+    
     posts = db.query(models.Post).all()
     if not posts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Oops!! There are no posts")
     return posts
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.PostResponse)
 def get_post_by_id(id:int,db:Session = Depends(get_db)):
-    
-    # cursor.execute("""SELECT * FROM posts where id = %s """,(str(id),))
-    # post_by_id= cursor.fetchone()
 
     post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
 
@@ -52,32 +36,22 @@ def get_post_by_id(id:int,db:Session = Depends(get_db)):
     return  post_by_id
 
 
-@app.post("/createposts", status_code=status.HTTP_201_CREATED)
-def create_a_new_post(post:Post,db:Session = Depends(get_db)):
-    # cursor.execute("""INSERT INTO posts(title, content, published) values(%s, %s, %s) RETURNING * """,
-    #                (post.title, post.content, post.published))   
-    # newly_created_post = cursor.fetchone()
-    # connection.commit()  
-
-    #newly_created_post = models.Post(title=post.title, content=post.content, published=post.published)
+@app.post("/posts/createposts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
+def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db)):
+    
     newly_created_post = models.Post(**post.model_dump())
-
     db.add(newly_created_post)
     db.commit()
-
     db.refresh(newly_created_post)
-    
-    return {newly_created_post}
+
+    return newly_created_post
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_a_post_by_id(id:int, db:Session = Depends(get_db)):
   
     try:
-        # cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
-        # deleted_post = cursor.fetchone()
-        # connection.commit()
-
+        
         post_query = db.query(models.Post).filter(models.Post.id == id)
         post = post_query.first()
 
@@ -101,13 +75,9 @@ def delete_a_post_by_id(id:int, db:Session = Depends(get_db)):
         )
     
 
-@app.put("/posts/{id}") # 200 status code
-def update_post(id:int, update_post:Post, db:Session = Depends(get_db)):
+@app.put("/posts/{id}", status_code=status.HTTP_200_OK, response_model=schemas.PostResponse) 
+def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(get_db)):
     try:
-        # cursor.execute("""UPDATE posts 
-        #             set title = %s, content = %s, published =%s WHERE id = %s RETURNING *""",(post.title, post.content, post.published, (str(id)),))
-        # updated_post = cursor.fetchone()
-        # connection.commit()
 
         post_query = db.query(models.Post).filter(models.Post.id == id)
         post = post_query.first()
@@ -120,7 +90,8 @@ def update_post(id:int, update_post:Post, db:Session = Depends(get_db)):
         
         post_query.update(update_post.model_dump(), synchronize_session=False)
         db.commit()
-        return {"data": post}
+        # db.refresh(post)
+        return post_query.first()
     
 
     except psycopg2.Error as database_error:
@@ -129,3 +100,27 @@ def update_post(id:int, update_post:Post, db:Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Something went wrong"
         )
+    
+
+
+@app.post("/users/create", status_code=status.HTTP_201_CREATED,response_model=schemas.UserResponse )
+def create_a_new_user(user: schemas.UserCreate,db:Session = Depends(get_db)):
+    
+    hashed_password = utils.hash(user.password)
+    user.password = hashed_password
+
+    newly_created_user = models.Users(**user.model_dump())
+    db.add(newly_created_user)
+    db.commit()
+    db.refresh(newly_created_user)
+    return newly_created_user
+
+
+@app.get("/users/{id}", response_model=schemas.UserResponse)
+def get_user_by_id(id:int,db:Session = Depends(get_db)):
+
+    user = db.query(models.Users).filter(models.Users.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
+    return  user
