@@ -81,9 +81,11 @@ def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(g
                     detail=f"Post with id {id} not found"
                 )
         
-        post_query.update(update_post.model_dump(), synchronize_session=False)
+        post_query.update(
+            {getattr(models.Post, key): value for key, value in update_post.model_dump().items()},
+            synchronize_session=False
+        )
         db.commit()
-        # db.refresh(post)
         return post_query.first()
     
 
