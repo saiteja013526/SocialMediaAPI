@@ -21,3 +21,7 @@ uvicorn
 watchfiles
 websockets
 passlib[bcrypt]
+bcrypt==3.2.0
+pydantic-settings
+python-jose[cryptography]
+python-multipart # to process the Form Data ex: /login endpoint
