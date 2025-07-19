@@ -2,7 +2,9 @@ from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Response,status, Depends,APIRouter
 import psycopg2
 from sqlalchemy.orm import Session
-from .. import models, schemas, utils
+
+# from app import oauth_2
+from .. import models, schemas, utils, oauth_2
 from ..database import connection, engine, get_db, connection
 
 
@@ -11,7 +13,7 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=List[schemas.PostResponse])
-def get_posts(db:Session = Depends(get_db)):
+def get_posts(db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
     
     posts = db.query(models.Post).all()
     if not posts:
@@ -20,7 +22,7 @@ def get_posts(db:Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=schemas.PostResponse)
-def get_post_by_id(id:int,db:Session = Depends(get_db)):
+def get_post_by_id(id:int,db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
 
     post_by_id = db.query(models.Post).filter(models.Post.id == id).first()
 
@@ -29,9 +31,10 @@ def get_post_by_id(id:int,db:Session = Depends(get_db)):
     return  post_by_id
 
 
-@router.post("/createposts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
-def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db)):
+@router.post("/createposts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse, )
+def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
     
+    # print(user_details)
     newly_created_post = models.Post(**post.model_dump())
     db.add(newly_created_post)
     db.commit()
@@ -41,7 +44,7 @@ def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_a_post_by_id(id:int, db:Session = Depends(get_db)):
+def delete_a_post_by_id(id:int, db:Session = Depends(get_db),user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
   
     try:
         
@@ -69,7 +72,7 @@ def delete_a_post_by_id(id:int, db:Session = Depends(get_db)):
     
 
 @router.put("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.PostResponse) 
-def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(get_db)):
+def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(get_db),user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
     try:
 
         post_query = db.query(models.Post).filter(models.Post.id == id)

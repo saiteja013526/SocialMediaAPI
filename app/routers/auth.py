@@ -9,7 +9,7 @@ from ..import database
 router = APIRouter(tags=["Authentication"])
 
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 # def login(user_credentials: schemas.UserLogin, db:Session = Depends(database.get_db)):    --->> this works fine but
 def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db:Session = Depends(database.get_db)): #OAuth2PasswordRequestForm--> no longer send the data for this reqyest in body. instead use the form data.
 
@@ -28,4 +28,6 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db:Session = 
     # create a token and return it
     access_token = oauth_2.create_access_token(data={"user_id": user.id, "name": user.name})
 
-    return {"token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "name": user.name}
+#    "user_id": user.id, "name": user.name   --> these will not be in the response because we have used the 
+#     response_model=schemas.Token and it returns only "access_token" and "token_type"
