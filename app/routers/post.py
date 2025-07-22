@@ -79,7 +79,7 @@ def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(g
         post = post_query.first()
 
         if post is None:
-            return HTTPException(
+            raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Post with id {id} not found"
                 )

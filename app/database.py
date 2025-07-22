@@ -9,7 +9,7 @@ from .config import settings
 
 import urllib.parse
 
-encoded_password = urllib.parse.quote("dell@123")
+encoded_password = urllib.parse.quote(settings.database_password)
 #print(encoded_password)
 
 # SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
