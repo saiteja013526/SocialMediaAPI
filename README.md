@@ -1,10 +1,10 @@
-# 📸 Hey there! Welcome to FastAPI Framework
+# 📸 Hey there! Welcome to FastAPI Framework.
 
 This is a cool little backend for a social media app, built with Python and FastAPI. It's got all the basic stuff you'd need to get a modern app up and running!
 
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.9.0-05998b?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.9.0-05998b?style=for-the-badge&logo=fastapi)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql)
 
 ---
 
@@ -21,15 +21,13 @@ This project shows off some key backend skills and has everything you need to ge
 
 ## What's Under the Hood?
 
-## 🚀 What's Under the Hood?
-
 Here's the tech we're using:
 
-- **Framework:** <span style="color:#05998b;">🟢 FastAPI</span>
-- **Database:** <span style="color:#336791;">🔵 PostgreSQL</span>
-- **ORM:** <span style="color:#e38c00;">🟠 SQLAlchemy</span>
-- **Authentication:** <span style="color:#f4b400;">🟡 JWT</span> & <span style="color:#4F5B93;">🔵 Passlib</span>
-- **Server:** <span style="color:#5c47a2;">🟣 Uvicorn</span>
+- **Framework:** FastAPI
+- **Database:** PostgreSQL
+- **ORM:** SQLAlchemy
+- **Authentication:** JWT & Passlib
+- **Server:** Uvicorn
 
 ---
 
@@ -47,7 +45,7 @@ Here's the tech we're using:
     pip install -r requirements.txt
     ```
 
-3. **Set up your database info.** Just create a `.env` file in the main folder.
+3. **Set up your database info.** Create a `.env` file in the main folder, and must have a PostgreSQL as database..
 4. **Fire it up!**
 
     ```bash
