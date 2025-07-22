@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Response,status, Depends
 import psycopg2
 from sqlalchemy.orm import Session
 from . import models, schemas, utils
-from .database import connection, engine, get_db, connection
+from .database import  engine, get_db
 from .routers import post, user, auth
 from .config import settings
 

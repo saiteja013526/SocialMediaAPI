@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 # from app import oauth_2
 from .. import models, schemas, utils, oauth_2
-from ..database import connection, engine, get_db, connection
+from ..database import  engine, get_db
 
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
@@ -64,7 +64,7 @@ def delete_a_post_by_id(id:int, db:Session = Depends(get_db),user_details : sche
     
     except psycopg2.Error as db_error:
         print(f"Database error: {db_error}")
-        connection.rollback()
+        
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while deleting the post"
