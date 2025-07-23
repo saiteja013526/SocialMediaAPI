@@ -14,10 +14,12 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 @router.get("/", response_model=List[schemas.PostResponse])
 def get_posts(db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
-    
-    posts = db.query(models.Post).all()
+
+    posts = db.query(models.Post).filter(models.Post.owner_id == user_details.id).all()
     if not posts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Oops!! There are no posts")
+    if not user_details:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view posts")
     return posts
 
 
@@ -28,6 +30,8 @@ def get_post_by_id(id:int,db:Session = Depends(get_db), user_details : schemas.T
 
     if not post_by_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
+    if not user_details:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view this post")
     return  post_by_id
 
 
@@ -36,6 +40,8 @@ def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db), user
     
     # print(user_details)
     newly_created_post = models.Post(**post.model_dump())
+    if not user_details:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to create a post")
     db.add(newly_created_post)
     db.commit()
     db.refresh(newly_created_post)
@@ -55,6 +61,12 @@ def delete_a_post_by_id(id:int, db:Session = Depends(get_db),user_details : sche
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Post with id {id} not found"
+            )
+        
+        if getattr(post, "owner_id") != user_details.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to delete this post"
             )
         
         post_query.delete(synchronize_session=False)
@@ -83,6 +95,11 @@ def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(g
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Post with id {id} not found"
                 )
+        if getattr(post, "owner_id") != user_details.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to update this post"
+            )
         
         post_query.update(
             {getattr(models.Post, key): value for key, value in update_post.model_dump().items()},

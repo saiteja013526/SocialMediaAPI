@@ -1,4 +1,4 @@
-# 📸 Hey there! Welcome to FastAPI Framework.
+# 📸 Hey there! Welcome to FastAPI Framework
 
 This is a cool little backend for a social media app, built with Python and FastAPI. It's got all the basic stuff you'd need to get a modern app up and running!
 
