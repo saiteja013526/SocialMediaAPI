@@ -52,6 +52,10 @@ class PostResponse(PostBase):
         "from_attributes": True
     }
 
+class PostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    published: Optional[bool] = None
 
 
 

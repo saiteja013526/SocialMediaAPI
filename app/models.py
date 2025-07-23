@@ -13,9 +13,9 @@ class Post(Base):
   published = Column(Boolean, server_default='TRUE', nullable=False)
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
   owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False) # Foreign key relation.
- 
-  owner = relationship("Users")
-  
+
+  owner = relationship("Users", back_populates="posts")
+
 
 class Users(Base):
   __tablename__ = "users"
@@ -25,4 +25,6 @@ class Users(Base):
   email = Column(String, nullable=False, unique=True)
   password = Column(String(128), nullable=False)
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+  posts = relationship("Post", back_populates="owner")
   

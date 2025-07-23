@@ -39,7 +39,7 @@ def get_post_by_id(id:int,db:Session = Depends(get_db), user_details : schemas.T
 def create_a_new_post(post:schemas.PostCreate,db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
     
     # print(user_details)
-    newly_created_post = models.Post(**post.model_dump())
+    newly_created_post = models.Post(owner_id = user_details.id,**post.model_dump())
     if not user_details:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to create a post")
     db.add(newly_created_post)
@@ -84,7 +84,12 @@ def delete_a_post_by_id(id:int, db:Session = Depends(get_db),user_details : sche
     
 
 @router.put("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.PostResponse) 
-def update_post(id:int, update_post:schemas.PostResponse, db:Session = Depends(get_db),user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
+def update_post(
+    id:int, 
+    update_post:schemas.PostUpdate, 
+    db:Session = Depends(get_db),
+    user_details : schemas.TokenData = Depends(oauth_2.get_current_user)
+    ):
     try:
 
         post_query = db.query(models.Post).filter(models.Post.id == id)
