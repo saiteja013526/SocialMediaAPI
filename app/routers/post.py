@@ -13,9 +13,14 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=List[schemas.PostResponse])
-def get_posts(db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
+def get_posts(db:Session = Depends(get_db), 
+            user_details : schemas.TokenData = Depends(oauth_2.get_current_user), 
+            limit: int = 10, skip:int = 0,
+            search: Optional[str]= ""
+            ):
 
-    posts = db.query(models.Post).filter(models.Post.owner_id == user_details.id).all()
+    # print(limit)
+    posts = db.query(models.Post).filter(models.Post.owner_id == user_details.id, (models.Post.title.ilike(f"%{search}%")) ).limit(limit).offset(skip).all()
     if not posts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Oops!! There are no posts")
     if not user_details:
