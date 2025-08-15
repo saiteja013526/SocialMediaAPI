@@ -27,6 +27,19 @@ def get_posts(db:Session = Depends(get_db),
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view posts")
     return posts
 
+@router.get("/allPosts", response_model=List[schemas.PostResponse])
+def get_allposts(db:Session = Depends(get_db), 
+            
+            limit: int = 10, skip:int = 0,
+            search: Optional[str]= ""
+            ):
+
+    
+    posts = db.query(models.Post).filter( (models.Post.title.ilike(f"%{search}%")) ).limit(limit).offset(skip).all()
+    if not posts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Oops!! There are no posts")
+    return posts
+
 
 @router.get("/{id}", response_model=schemas.PostResponse)
 def get_post_by_id(id:int,db:Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):

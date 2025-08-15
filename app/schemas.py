@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Annotated, Optional
+from pydantic import BaseModel, EmailStr, Field, field_validator, conint
 
 
 
@@ -68,6 +68,8 @@ class TokenData(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
 
-
+class Vote(BaseModel):
+    post_id: int
+    direction: Annotated[int, Field(ge=0, le=1)]   # 1 = like, 0 = unlike
+    ## need some login to like or unlike the post schema 
     
-
