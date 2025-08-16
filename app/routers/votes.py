@@ -10,6 +10,11 @@ router = APIRouter(prefix="/vote", tags=["Vote"])
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def vote(vote: schemas.Vote, db: Session = Depends(get_db), user_details : schemas.TokenData = Depends(oauth_2.get_current_user)):
     
+
+    post = db.query(models.Posts).filter(models.Posts.id == vote.post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {vote.post_id} does not exist")
+    
     if not user_details:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to vote")
     

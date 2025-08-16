@@ -71,5 +71,5 @@ class TokenData(BaseModel):
 class Vote(BaseModel):
     post_id: int
     direction: Annotated[int, Field(ge=0, le=1)]   # 1 = like, 0 = unlike
-    ## need some login to like or unlike the post schema 
+    
     
