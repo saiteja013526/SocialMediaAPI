@@ -1,11 +1,11 @@
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Response,status, Depends,APIRouter
+from fastapi import HTTPException, Response,status, Depends,APIRouter
 import psycopg2
 from sqlalchemy.orm import Session
 
 # from app import oauth_2
-from .. import models, schemas, utils, oauth_2
-from ..database import  engine, get_db
+from .. import models, schemas, oauth_2
+from ..database import get_db
 
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
@@ -30,7 +30,7 @@ def get_posts(db:Session = Depends(get_db),
 @router.get("/allPosts", response_model=List[schemas.PostResponse])
 def get_allposts(db:Session = Depends(get_db), 
             
-            limit: int = 10, skip:int = 0,
+            limit: int = 30, skip:int = 0,
             search: Optional[str]= ""
             ):
 

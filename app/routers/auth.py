@@ -1,6 +1,5 @@
-from fastapi import FastAPI, HTTPException, Response,status, Depends, APIRouter
+from fastapi import  HTTPException, status, Depends, APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-import psycopg2
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth_2
 from ..import database 

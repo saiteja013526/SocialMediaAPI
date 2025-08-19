@@ -20,6 +20,3 @@ app.include_router(votes.router)
 
 
 
-
-    
-

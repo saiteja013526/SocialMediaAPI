@@ -1,4 +1,3 @@
-
 from .database import Base
 
 from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, text, ForeignKey

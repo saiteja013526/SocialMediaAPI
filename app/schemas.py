@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Annotated, Optional
-from pydantic import BaseModel, EmailStr, Field, field_validator, conint
-
-
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class UserCreate(BaseModel):
     name: str = Field(..., max_length=24)
